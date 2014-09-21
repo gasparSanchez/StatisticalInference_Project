@@ -1,0 +1,112 @@
+Coursera Statistical Inference Project Part Two
+===============================================
+
+Introduction
+------------
+In the second part of the assignment we're going to analyze the ToothGrowth data in the R datasets package. 
+
+The dataset ToothGrowth
+-----------------------
+The response is the length of odontoblasts (teeth) in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice or ascorbic acid).
+
+Exploratory data analysis
+-------------------------
+We're going to represent the teeth lenght versus the dose of Vitamin for the two delivery methods.
+```{r, eval=TRUE, echo=FALSE, fig.width=4, fig.height=4}
+# Load the data
+data(ToothGrowth)
+# Basic exploratory data analysis
+library(ggplot2)
+g <- ggplot(ToothGrowth, aes(x = dose, y = len))
+g <- g + geom_point(size =3, pch = 21, fill = "salmon", alpha = .5) + facet_grid(. ~ supp)
+g
+```
+The first thing that we can see is that it looks like, for both delivery methods, with more dose of Vitamin we achieve longer teeth. It looks like the OJ supplement type is more effective than the VC type, however the difference is less clear for the highest dose.
+
+We can see accentuate the difference in the delivery method regardless of the dose with a boxplot.
+```{r, eval=TRUE, echo=FALSE, fig.width=3, fig.height=3}
+g <- ggplot(ToothGrowth, aes(x = supp, y = len))
+g <- g + geom_boxplot()
+g
+```
+
+Basic summary of the data
+-------------------------
+We're going to extract the mean and standard deviations for the six differents groups that we find in our data.
+```{r, eval=FALSE, echo=FALSE}
+mean(subset(ToothGrowth, ToothGrowth$supp == "OJ" & ToothGrowth$dose == 0.5)$len)
+sd(subset(ToothGrowth, ToothGrowth$supp == "OJ" & ToothGrowth$dose == 0.5)$len)
+#
+mean(subset(ToothGrowth, ToothGrowth$supp == "VC" & ToothGrowth$dose == 0.5)$len)
+sd(subset(ToothGrowth, ToothGrowth$supp == "VC" & ToothGrowth$dose == 0.5)$len)
+# 
+mean(subset(ToothGrowth, ToothGrowth$supp == "OJ" & ToothGrowth$dose == 1.0 )$len)
+sd(subset(ToothGrowth, ToothGrowth$supp == "OJ" & ToothGrowth$dose == 1.0)$len)
+#
+mean(subset(ToothGrowth, ToothGrowth$supp == "VC" & ToothGrowth$dose == 1.0 )$len)
+sd(subset(ToothGrowth, ToothGrowth$supp == "VC" & ToothGrowth$dose == 1.0)$len)
+#
+mean(subset(ToothGrowth, ToothGrowth$supp == "OJ" & ToothGrowth$dose == 2.0 )$len)
+sd(subset(ToothGrowth, ToothGrowth$supp == "OJ" & ToothGrowth$dose == 2.0)$len)
+# 
+mean(subset(ToothGrowth, ToothGrowth$supp == "VC" & ToothGrowth$dose == 2.0 )$len)
+sd(subset(ToothGrowth, ToothGrowth$supp == "VC" & ToothGrowth$dose == 2.0)$len)
+```
+
+dose/type  |0.5 OJ|0.5 VC|1.0 OJ|1.0 VC|2.0 OJ|2.0 VC
+-----------|------|------|------|------|------|------
+mean length|13.23 |7.98  |22.70 |16.77 |26.06 |26.14 
+lenght sd  |4.46  |2.75  |3.91  |2.51  |2.66  |4.80 
+
+That confirms what we show in the graphical representation of the data.
+
+Using confidence intervals and hypothesis tests to compare tooth growth 
+-----------------------------------------------------------------------
+Know we're going to use confidence intervals and hypothesis tests to compare tooth growth. 
+
+### Tooth growth by the two delivery methods
+Is there a difference in the teeth grow by the method of administration regardless of the dose? We're going to check it using a paired t-test.
+```{r}
+g1 <- ToothGrowth$len[1 : 30] 
+g2 <- ToothGrowth$len[31 : 60]
+t.test(g2, g1, paired = TRUE)
+```
+So it is clear that we can reject the null hypothesis (equal medians of the two delivering methods) and affirm the difference the delivery methods being the OJ method the more efficient.
+
+### Tooth growth by dose for the two delivery methods
+#### VC method
+We check the differences between the means of the three different dosis.
+```{r}
+# Definition of the groups
+g1.d05 <- ToothGrowth$len[1 : 10]
+g1.d10 <- ToothGrowth$len[11 : 20]
+g1.d20 <- ToothGrowth$len[21 : 30]
+# Difference between the 1.0 mg and 0.5 mg dose
+t.test(g1.d10, g1.d05, paired = TRUE)
+# Difference between the 2.0 mg and 1.0 mg dose
+t.test(g1.d20, g1.d10, paired = TRUE)
+# Difference between the 2.0 mg and 0.5 mg dose
+t.test(g1.d20, g1.d05, paired = TRUE)
+```
+In all the cases we see that according with the t-test there exists differences in the length gown of the teeth reaching longest longitude with greater Vitamin C dose.
+
+#### OJ method
+We check the differences between the means of the three different dosis.
+```{r}
+# Definition of the groups
+g2.d05 <- ToothGrowth$len[31 : 40]
+g2.d10 <- ToothGrowth$len[41 : 50]
+g2.d20 <- ToothGrowth$len[51 : 60]
+# Difference between the 1.0 mg and 0.5 mg dose
+t.test(g2.d10, g2.d05, paired = TRUE)
+# Difference between the 2.0 mg and 1.0 mg dose
+t.test(g2.d20, g2.d10, paired = TRUE)
+# Difference between the 2.0 mg and 0.5 mg dose
+t.test(g2.d20, g2.d05, paired = TRUE)
+```
+In all the cases we see that according with the t-test there exists differences in the length gown of the teeth reaching longest longitude with greater Vitamin C dose.
+#### One last case: 2.0 mg dose with OJ and VC methods 
+```{r}
+t.test(g1.d20, g2.d20, paired = TRUE)
+```
+In this case we can see there is no evidence to discard the null hypothesis.
